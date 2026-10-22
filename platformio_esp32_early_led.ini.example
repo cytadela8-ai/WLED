@@ -1,0 +1,12 @@
+; Local classic ESP32 build with the stock AudioReactive usermod.
+[platformio]
+default_envs = esp32dev
+
+[env:esp32dev]
+custom_usermods = audioreactive
+; Ignore known shadowed locals in the pinned GifDecoder and ESP32 framework sources.
+build_unflags = ${common.build_unflags} -Wshadow=compatible-local
+build_flags = ${common.build_flags} ${esp32_idf_V4.build_flags}
+  -D WLED_RELEASE_NAME=\"ESP32\" -DARDUINO_USB_CDC_ON_BOOT=0
+  ; AudioReactive uses legacy ADC APIs required by this pinned IDF 4.4 toolchain.
+  -Wno-deprecated-declarations
