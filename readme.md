@@ -101,3 +101,32 @@ If you are prone to photosensitive epilepsy, we recommend you do **not** use thi
 If you still want to try, avoid strobe, lightning or noise modes and high effect speed settings.
 
 As per the EUPL license, no liability is assumed for any damage to you or any other person or equipment.
+
+
+## Testing early boot-preset output on classic ESP32
+
+The boot preset's first frame is rendered before usermod setup. The startup fade is
+skipped so AudioReactive microphone initialization does not leave the first frame black.
+Later transitions retain their configured duration, and relay stabilization is preserved.
+Animations continue after setup finishes; audio-dependent effects can remain dark until
+microphone data is available.
+
+For the classic ESP32 with 4 MB flash and no PSRAM, with project dependencies installed:
+
+```sh
+cp platformio_esp32_early_led.ini.example platformio_override.ini
+npm ci
+npm run build
+npm test
+python tools/test_early_audio.py
+pio run -e esp32dev
+```
+
+The native test requires `g++`. It executes the AudioReactive state methods from the
+firmware source with the vendored ArduinoJson; hardware task and palette lifecycle
+boundaries use counters. It checks early settings, data readiness, runtime updates and
+invalid input. Its readiness and early-settings checks reject the original behavior.
+
+Verify startup timing, the saved preset, boot-off behavior, relay operation if configured,
+and normal microphone operation by power-cycling the actual controller. Physical timing
+has not been measured during development.
